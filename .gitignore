@@ -1,0 +1,65 @@
+env.php
+config/env.php
+
+# Composer and dependencies
+vendor/
+build/
+node_modules/
+
+# VisualStudioCode
+# Local History for Visual Studio Code
+.history/
+*.code-workspace
+#.vscode
+
+# Directories holding app-generated files.
+# Keep the logs/ directory
+!var/logs/
+var/logs/*
+!var/logs/.htaccess
+# Keep the tmp/ directory
+!var/tmp/
+var/tmp/*
+!var/tmp/.htaccess
+
+# Keep the cache/ directory
+!cache/tmp/
+cache/tmp/*
+!cache/tmp/.htaccess
+
+# IDEs
+.idea/
+nbproject/
+.DS_STORE
+cache.properties
+.php_cs.cache
+
+.phpunit.result.cache
+.phpunit.cache/
+phpunit.xml.bak
+package-lock.json
+
+# keys
+*.pem
+*.key
+*.ppk
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+# Dump file
+*.stackdump
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+# Windows shortcuts
+*.lnk
+
+app/src/Controllers/TestController.php
+app/src/Models/TestModel.php

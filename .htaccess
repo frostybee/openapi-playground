@@ -1,0 +1,21 @@
+# .htaccess (Optional - for clean URLs and security)
+RewriteEngine On
+
+# Redirect to index.php if no file is specified
+DirectoryIndex index.php
+
+# Protect uploads directory from direct access
+<Files "uploads/*">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
+
+# PHP settings
+php_value upload_max_filesize 5M
+php_value post_max_size 5M
+php_value max_execution_time 30
