@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'includes/config.php';
+require_once '../src/config/app.php';
 
 $fileId = $_GET['id'] ?? '';
 $renderer = $_GET['renderer'] ?? 'swagger';
