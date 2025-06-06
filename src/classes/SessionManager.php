@@ -10,6 +10,26 @@ class SessionManager
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            // Configure session to last 4 days (4 * 24 * 60 * 60 = 345600 seconds).
+            $sessionLifetime = 4 * 24 * 60 * 60; // 4 days in seconds
+
+            // Set session cookie lifetime to 4 days.
+            session_set_cookie_params([
+                'lifetime' => $sessionLifetime,
+                'path' => '/',
+                'domain' => '',
+                'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+
+            // Set session garbage collection max lifetime to 4 days.
+            ini_set('session.gc_maxlifetime', $sessionLifetime);
+
+            // Increase garbage collection probability for better cleanup.
+            ini_set('session.gc_probability', 1);
+            ini_set('session.gc_divisor', 100);
+
             session_start();
         }
     }

@@ -37,9 +37,24 @@ FileManager::ensureUploadDirectoryExists();
 
             if ($result['success']) {
                 SessionManager::addUploadedFile($result['file_id'], $result['file_data']);
-                echo '<div class="alert alert-success">✓ File uploaded successfully!</div>';
+                // Redirect to prevent duplicate uploads on page refresh.
+                header('Location: index.php?upload=success');
+                exit;
             } else {
-                echo '<div class="alert alert-error">✗ ' . htmlspecialchars($result['error']) . '</div>';
+                // Store error message in session to display after redirect.
+                $_SESSION['upload_error'] = $result['error'];
+                header('Location: index.php?upload=error');
+                exit;
+            }
+        }
+
+        // Display upload messages from redirects.
+        if (isset($_GET['upload'])) {
+            if ($_GET['upload'] === 'success') {
+                echo '<div class="alert alert-success">✓ File uploaded successfully!</div>';
+            } elseif ($_GET['upload'] === 'error' && isset($_SESSION['upload_error'])) {
+                echo '<div class="alert alert-error">✗ ' . htmlspecialchars($_SESSION['upload_error']) . '</div>';
+                unset($_SESSION['upload_error']); // Clear the error message.
             }
         }
 
@@ -49,16 +64,16 @@ FileManager::ensureUploadDirectoryExists();
             $fileData = SessionManager::getUploadedFile($fileId);
 
             if ($fileData) {
-                // Delete the file from filesystem
+                // Delete the file from filesystem.
                 FileManager::deleteFile($fileData['file_name']);
 
-                // Remove from session
+                // Remove from session.
                 SessionManager::removeUploadedFile($fileId);
                 echo '<div class="alert alert-success">✓ File deleted successfully!</div>';
             }
         }
 
-        // Handle cleanup of orphaned files (optional feature)
+        // Handle cleanup of orphaned files (optional feature).
         if (isset($_GET['cleanup'])) {
             $cleanedCount = FileManager::cleanupOrphanedFiles(SessionManager::getUploadedFiles());
             if ($cleanedCount > 0) {
@@ -77,8 +92,8 @@ FileManager::ensureUploadDirectoryExists();
                 </div>
 
                 <div class="form-group">
-                    <label for="custom_name">Custom Name (Optional)</label>
-                    <input type="text" id="custom_name" name="custom_name" placeholder="e.g., My API v1.0">
+                    <label for="custom_name">Custom Name</label>
+                    <input type="text" id="custom_name" name="custom_name" placeholder="e.g., My API v1.0" required>
                 </div>
 
                 <button type="submit" class="btn">Upload & View</button>
