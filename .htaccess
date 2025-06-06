@@ -1,8 +1,24 @@
-# .htaccess (Optional - for clean URLs and security)
+# .htaccess - Root directory
 RewriteEngine On
 
-# Redirect to index.php if no file is specified
-DirectoryIndex index.php
+# Redirect all requests to public directory
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteRule ^(.*)$ public/$1 [L]
+
+# RewriteRule ^$ public/ [L]
+# RewriteRule (.*) public/$1 [L]
+
+# If accessing root, redirect to public/index.php
+RewriteRule ^$ public/ [L]
+RewriteRule (.*) public/$1 [L]
+
+# Protect sensitive directories from direct access
+RewriteRule ^src/ - [F,L]
+RewriteRule ^storage/ - [F,L]
+RewriteRule ^templates/ - [F,L]
+RewriteRule ^includes/ - [F,L]
 
 # Protect uploads directory from direct access
 <Files "uploads/*">
