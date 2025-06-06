@@ -67,16 +67,6 @@ FileManager::ensureUploadDirectoryExists();
                 echo '<div class="alert alert-success">✓ No orphaned files found.</div>';
             }
         }
-
-        // Handle fixing misplaced files (move from storage/ to storage/uploads/)
-        if (isset($_GET['fix_misplaced'])) {
-            $movedCount = FileManager::fixMisplacedFiles();
-            if ($movedCount > 0) {
-                echo '<div class="alert alert-success">✓ Moved ' . $movedCount . ' misplaced file(s) to the correct uploads directory.</div>';
-            } else {
-                echo '<div class="alert alert-success">✓ No misplaced files found.</div>';
-            }
-        }
         ?>
 
         <div class="upload-section">

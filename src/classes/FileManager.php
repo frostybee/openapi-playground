@@ -45,13 +45,13 @@ class FileManager
             ];
         }
 
-        // Generate unique file ID and prepare file info
+        // Generate unique file ID and prepare file info.
         $fileId = uniqid();
         $extension = strtolower(pathinfo($uploadedFile['name'], PATHINFO_EXTENSION));
         $fileName = $fileId . '.' . $extension;
         $destination = self::getUploadDirectory() . $fileName;
 
-        // Move the uploaded file
+        // Move the uploaded file.
         if (!move_uploaded_file($uploadedFile['tmp_name'], $destination)) {
             return [
                 'success' => false,
@@ -163,41 +163,4 @@ class FileManager
         return $cleanedCount;
     }
 
-    /**
-     * Fix misplaced files by moving them from storage/ to storage/uploads/
-     */
-    public static function fixMisplacedFiles(): int
-    {
-        $movedCount = 0;
-        $storageDir = __DIR__ . '/../../storage/';
-        $uploadDir = self::getUploadDirectory();
-
-        // Ensure upload directory exists
-        self::ensureUploadDirectoryExists();
-
-        if (!is_dir($storageDir)) {
-            return $movedCount;
-        }
-
-        $filesInStorage = scandir($storageDir);
-
-        foreach ($filesInStorage as $file) {
-            // Skip directories and system files
-            if ($file === '.' || $file === '..' || is_dir($storageDir . $file)) {
-                continue;
-            }
-
-            // Only move files that look like uploaded files (with unique ID pattern)
-            if (preg_match('/^[a-f0-9]{13}\.(json|yaml|yml)$/i', $file)) {
-                $sourcePath = $storageDir . $file;
-                $destinationPath = $uploadDir . $file;
-
-                if (rename($sourcePath, $destinationPath)) {
-                    $movedCount++;
-                }
-            }
-        }
-
-        return $movedCount;
-    }
 }
