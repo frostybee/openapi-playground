@@ -1,0 +1,98 @@
+.rapidoc-toolbar {
+  background: rgb(222, 222, 229);
+  border-bottom: 1px solid #e9ecef;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.render-style-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.render-style-selector label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+  margin: 0;
+}
+
+.render-style-selector select {
+  padding: 6px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+  color: #495057;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.render-style-selector select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: #dee2e6;
+}
+
+/* Font size CSS custom properties for RapiDoc */
+.rapidoc-font-small {
+  --font-size-small: 11px;
+  --font-size-regular: 12px;
+  --font-size-large: 13px;
+  --font-size-mono: 11px;
+}
+
+.rapidoc-font-default {
+  --font-size-small: 12px;
+  --font-size-regular: 14px;
+  --font-size-large: 16px;
+  --font-size-mono: 12px;
+}
+
+.rapidoc-font-large {
+  --font-size-small: 14px;
+  --font-size-regular: 16px;
+  --font-size-large: 18px;
+  --font-size-mono: 14px;
+}
+
+.rapidoc-font-x-large {
+  --font-size-small: 16px;
+  --font-size-regular: 18px;
+  --font-size-large: 20px;
+  --font-size-mono: 16px;
+}
+
+/* Apply modern system font stack to RapiDoc and toolbar */
+rapi-doc {
+  --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Inconsolata, "Roboto Mono", "Courier New", Courier, monospace;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Apply font to toolbar and all its elements */
+.rapidoc-toolbar,
+.rapidoc-toolbar * {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}

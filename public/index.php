@@ -28,7 +28,7 @@ FileManager::ensureUploadDirectoryExists();
         <p class="subtitle">Upload your OpenAPI specifications and view them with Swagger UI or RapiDoc</p>
 
         <?php
-        // Handle file upload
+        // Handle file upload.
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['openapi_file'])) {
             $uploadedFile = $_FILES['openapi_file'];
             $customName = trim($_POST['custom_name'] ?? '');

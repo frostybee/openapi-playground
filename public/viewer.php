@@ -41,6 +41,12 @@ if (isset($_GET['spec'])) {
     readfile($filePath);
     exit;
 }
+
+// Validate renderer
+$validRenderers = ['swagger', 'rapidoc'];
+if (!in_array($renderer, $validRenderers)) {
+    $renderer = 'swagger'; // Default fallback
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,17 +56,12 @@ if (isset($_GET['spec'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($file['custom_name']); ?> - <?php echo ucfirst($renderer); ?></title>
     <link rel="stylesheet" href="./assets/css/viewer.css">
-
-    <?php if ($renderer === 'swagger'): ?>
-        <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.0.0/swagger-ui.css" />
-    <?php else: ?>
-        <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
-    <?php endif; ?>
+    <link rel="stylesheet" href="./assets/css/rapidoc-viewer.css">
 </head>
 
 <body>
     <div class="header">
-        <h1><?php echo htmlspecialchars($file['custom_name']); ?></h1>
+        <h1>Schema:&nbsp; <?php echo htmlspecialchars($file['custom_name']); ?></h1>
         <div class="header-actions">
             <a href="viewer.php?id=<?php echo $fileId; ?>&renderer=swagger"
                 class="btn <?php echo $renderer === 'swagger' ? 'btn-active' : 'btn-light'; ?>">
@@ -75,60 +76,15 @@ if (isset($_GET['spec'])) {
     </div>
 
     <div class="viewer-container">
-        <?php if ($renderer === 'swagger'): ?>
-            <div id="swagger-ui"></div>
-            <script src="https://unpkg.com/swagger-ui-dist@5.0.0/swagger-ui-bundle.js"></script>
-            <script>
-                SwaggerUIBundle({
-                    url: 'viewer.php?id=<?php echo $fileId; ?>&spec=1',
-                    dom_id: '#swagger-ui',
-                    deepLinking: true,
-                    presets: [
-                        SwaggerUIBundle.presets.apis,
-                        SwaggerUIBundle.presets.standalone
-                    ],
-                    plugins: [
-                        SwaggerUIBundle.plugins.DownloadUrl
-                    ],
-                    tryItOutEnabled: true,
-                    displayRequestDuration: true,
-                    docExpansion: "list",
-                    filter: false,
-                    showExtensions: true,
-                    showCommonExtensions: true,
-                    requestInterceptor: function(request) {
-                        // Handle CORS for localhost APIs
-                        if (request.url.includes('localhost') || request.url.includes('127.0.0.1')) {
-                            request.headers = request.headers || {};
-                            request.headers['Access-Control-Allow-Origin'] = '*';
-                        }
-                        return request;
-                    }
-                });
-            </script>
-        <?php else: ?>
-            <rapi-doc
-                spec-url="viewer.php?id=<?php echo $fileId; ?>&spec=1"
-                theme="light"
-                bg-color="#fafafa"
-                text-color="#333"
-                header-color="#667eea"
-                primary-color="#667eea"
-                render-style="view"
-                nav-bg-color="#f6f7f9"
-                nav-text-color="#333"
-                nav-hover-bg-color="#667eea"
-                nav-hover-text-color="white"
-                nav-accent-color="#667eea"
-                show-header="false"
-                allow-try="true"
-                allow-authentication="true"
-                allow-server-selection="true"
-                default-schema-tab="schema"
-                schema-style="tree"
-                schema-expand-level="1">
-            </rapi-doc>
-        <?php endif; ?>
+        <?php
+        // Include the appropriate renderer template
+        $templatePath = __DIR__ . "/views/{$renderer}-viewer.php";
+        if (file_exists($templatePath)) {
+            include $templatePath;
+        } else {
+            echo "<p>Error: Renderer template not found.</p>";
+        }
+        ?>
     </div>
 </body>
 
