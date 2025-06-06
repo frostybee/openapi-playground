@@ -3,6 +3,7 @@ require_once '../src/config/app.php';
 require_once '../src/helpers/functions.php';
 require_once '../src/classes/SessionManager.php';
 require_once '../src/classes/FileManager.php';
+require_once '../src/classes/ExampleManager.php';
 
 // Start session and initialize uploaded files storage
 SessionManager::start();
@@ -100,6 +101,35 @@ FileManager::ensureUploadDirectoryExists();
             </form>
         </div>
 
+        <?php
+        // Get available example files.
+        $exampleFiles = ExampleManager::getAvailableExamples();
+        if (!empty($exampleFiles)): ?>
+            <h2>Example Schemas</h2>
+            <p class="examples-description">Try out these example OpenAPI specifications to see how the viewers work:</p>
+            <div class="file-list">
+                <?php foreach ($exampleFiles as $example): ?>
+                    <div class="file-item example-item">
+                        <div class="file-info">
+                            <h3><?php echo htmlspecialchars($example['display_name']); ?></h3>
+                            <div class="meta">
+                                File: <?php echo htmlspecialchars($example['file_name']); ?> •
+                                <?php echo number_format($example['size'] / 1024, 1); ?> KB •
+                                <span class="example-badge">Example</span>
+                            </div>
+                            <?php if (!empty($example['description'])): ?>
+                                <div class="description"><?php echo htmlspecialchars($example['description']); ?></div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="file-actions">
+                            <a href="viewer.php?id=<?php echo $example['id']; ?>&renderer=swagger" class="btn-small btn-swagger">Swagger UI</a>
+                            <a href="viewer.php?id=<?php echo $example['id']; ?>&renderer=rapidoc" class="btn-small btn-rapidoc">RapiDoc</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
         <?php if (SessionManager::getUploadedFilesCount() > 0): ?>
             <h2>Your Uploaded Files</h2>
             <div class="file-list">
@@ -124,7 +154,7 @@ FileManager::ensureUploadDirectoryExists();
         <?php endif; ?>
 
         <div class="help-text">
-            <h3>How to Use</h3>
+            <h3>Usage Instructions:</h3>
             <ul>
                 <li><strong>Upload:</strong> Select your OpenAPI specification file (.json, .yaml, or .yml)</li>
                 <li><strong>View:</strong> Choose between Swagger UI (industry standard) or RapiDoc (modern design)</li>
