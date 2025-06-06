@@ -1,19 +1,15 @@
 <?php
-session_start();
-
 require_once '../src/config/app.php';
 require_once '../src/helpers/functions.php';
+require_once '../src/classes/SessionManager.php';
+require_once '../src/classes/FileManager.php';
 
-//TODO: Move these functions to a helper file.
-// Create uploads directory if it doesn't exist.
-if (!is_dir(UPLOAD_DIR)) {
-    mkdir(UPLOAD_DIR, 0755, true);
-}
+// Start session and initialize uploaded files storage
+SessionManager::start();
+SessionManager::initializeUploadedFiles();
 
-// Initialize session storage for uploaded files.
-if (!isset($_SESSION['uploaded_files'])) {
-    $_SESSION['uploaded_files'] = [];
-}
+// Ensure upload directory exists
+FileManager::ensureUploadDirectoryExists();
 ?>
 
 <!DOCTYPE html>
@@ -37,50 +33,48 @@ if (!isset($_SESSION['uploaded_files'])) {
             $uploadedFile = $_FILES['openapi_file'];
             $customName = trim($_POST['custom_name'] ?? '');
 
-            if ($uploadedFile['error'] === UPLOAD_ERR_OK) {
-                $validation = validateOpenAPIFile($uploadedFile['tmp_name'], $uploadedFile['name']);
+            $result = FileManager::processUploadedFile($uploadedFile, $customName);
 
-                if ($validation['valid']) {
-                    $fileId = uniqid();
-                    $extension = strtolower(pathinfo($uploadedFile['name'], PATHINFO_EXTENSION));
-                    $fileName = $fileId . '.' . $extension;
-                    $destination = UPLOAD_DIR . $fileName;
-
-                    if (move_uploaded_file($uploadedFile['tmp_name'], $destination)) {
-                        $_SESSION['uploaded_files'][$fileId] = [
-                            'id' => $fileId,
-                            'original_name' => $uploadedFile['name'],
-                            'custom_name' => $customName ?: pathinfo($uploadedFile['name'], PATHINFO_FILENAME),
-                            'file_name' => $fileName,
-                            'upload_time' => time(),
-                            'size' => $uploadedFile['size']
-                        ];
-
-                        echo '<div class="alert alert-success">✓ File uploaded successfully!</div>';
-                    } else {
-                        echo '<div class="alert alert-error">✗ Failed to save uploaded file.</div>';
-                    }
-                } else {
-                    echo '<div class="alert alert-error">✗ ' . htmlspecialchars($validation['error']) . '</div>';
-                }
+            if ($result['success']) {
+                SessionManager::addUploadedFile($result['file_id'], $result['file_data']);
+                echo '<div class="alert alert-success">✓ File uploaded successfully!</div>';
             } else {
-                echo '<div class="alert alert-error">✗ Upload error: ' . $uploadedFile['error'] . '</div>';
+                echo '<div class="alert alert-error">✗ ' . htmlspecialchars($result['error']) . '</div>';
             }
         }
 
-        // Handle file deletion
+        // Handle file deletion.
         if (isset($_GET['delete'])) {
             $fileId = $_GET['delete'];
-            if (isset($_SESSION['uploaded_files'][$fileId])) {
-                $fileName = $_SESSION['uploaded_files'][$fileId]['file_name'];
-                $filePath = UPLOAD_DIR . $fileName;
+            $fileData = SessionManager::getUploadedFile($fileId);
 
-                if (file_exists($filePath)) {
-                    unlink($filePath);
-                }
+            if ($fileData) {
+                // Delete the file from filesystem
+                FileManager::deleteFile($fileData['file_name']);
 
-                unset($_SESSION['uploaded_files'][$fileId]);
+                // Remove from session
+                SessionManager::removeUploadedFile($fileId);
                 echo '<div class="alert alert-success">✓ File deleted successfully!</div>';
+            }
+        }
+
+        // Handle cleanup of orphaned files (optional feature)
+        if (isset($_GET['cleanup'])) {
+            $cleanedCount = FileManager::cleanupOrphanedFiles(SessionManager::getUploadedFiles());
+            if ($cleanedCount > 0) {
+                echo '<div class="alert alert-success">✓ Cleaned up ' . $cleanedCount . ' orphaned file(s).</div>';
+            } else {
+                echo '<div class="alert alert-success">✓ No orphaned files found.</div>';
+            }
+        }
+
+        // Handle fixing misplaced files (move from storage/ to storage/uploads/)
+        if (isset($_GET['fix_misplaced'])) {
+            $movedCount = FileManager::fixMisplacedFiles();
+            if ($movedCount > 0) {
+                echo '<div class="alert alert-success">✓ Moved ' . $movedCount . ' misplaced file(s) to the correct uploads directory.</div>';
+            } else {
+                echo '<div class="alert alert-success">✓ No misplaced files found.</div>';
             }
         }
         ?>
@@ -101,10 +95,10 @@ if (!isset($_SESSION['uploaded_files'])) {
             </form>
         </div>
 
-        <?php if (!empty($_SESSION['uploaded_files'])): ?>
+        <?php if (SessionManager::getUploadedFilesCount() > 0): ?>
             <h2>Your Uploaded Files</h2>
             <div class="file-list">
-                <?php foreach (array_reverse($_SESSION['uploaded_files'], true) as $file): ?>
+                <?php foreach (SessionManager::getUploadedFilesReversed() as $file): ?>
                     <div class="file-item">
                         <div class="file-info">
                             <h3><?php echo htmlspecialchars($file['custom_name']); ?></h3>

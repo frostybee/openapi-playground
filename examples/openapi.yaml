@@ -1,4 +1,4 @@
-openapi: 3.0.4
+openapi: 3.1.4
 info:
   title: Swagger Petstore - OpenAPI 3.0
   description: |-
@@ -267,7 +267,7 @@ paths:
                 $ref: '#/components/schemas/Pet'
             application/xml:
               schema:
-                $ref: '#/components/schemas/Pet'        
+                $ref: '#/components/schemas/Pet'
         '400':
           description: Invalid input
         default:
@@ -490,7 +490,7 @@ paths:
                 $ref: '#/components/schemas/User'
             application/xml:
               schema:
-                $ref: '#/components/schemas/User'        
+                $ref: '#/components/schemas/User'
         default:
           description: Unexpected error
   /user/createWithList:

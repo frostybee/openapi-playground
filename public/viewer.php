@@ -1,25 +1,34 @@
 <?php
-session_start();
-require_once '../src/config/app.php';
 
+require_once '../src/config/app.php';
+require_once '../src/classes/SessionManager.php';
+require_once '../src/classes/FileManager.php';
+
+// Start the session and initialize the uploaded files storage.
+SessionManager::start();
+
+// Get the file ID and renderer from the query parameters.
 $fileId = $_GET['id'] ?? '';
 $renderer = $_GET['renderer'] ?? 'swagger';
 
-if (!$fileId || !isset($_SESSION['uploaded_files'][$fileId])) {
-    var_dump($_SESSION['uploaded_files']);exit;
+// Get the file data.
+$file = SessionManager::getUploadedFile($fileId);
+
+// If the file is not found, redirect to the index page.
+if (!$fileId || !$file) {
     header('Location: index.php');
     exit;
 }
 
-$file = $_SESSION['uploaded_files'][$fileId];
-$filePath = UPLOAD_DIR . $file['file_name'];
+// Get the file path and check if it exists.
+$filePath = FileManager::getFilePath($file['file_name']);
 
-if (!file_exists($filePath)) {
+if (!FileManager::fileExists($file['file_name'])) {
     header('Location: index.php');
     exit;
 }
 
-// Determine if we need to serve the spec file directly
+// Determine if we need to serve the spec file directly.
 if (isset($_GET['spec'])) {
     $extension = strtolower(pathinfo($file['file_name'], PATHINFO_EXTENSION));
 
@@ -40,70 +49,7 @@ if (isset($_GET['spec'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($file['custom_name']); ?> - <?php echo ucfirst($renderer); ?></title>
-
-    <style>
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.5em;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .btn-light {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-light:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-active {
-            background: white;
-            color: #667eea;
-        }
-
-        .viewer-container {
-            height: calc(100vh - 70px);
-            overflow: hidden;
-        }
-
-        #swagger-ui {
-            height: 100%;
-        }
-
-        rapi-doc {
-            height: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="./assets/css/viewer.css">
 
     <?php if ($renderer === 'swagger'): ?>
         <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.0.0/swagger-ui.css" />
@@ -144,8 +90,12 @@ if (isset($_GET['spec'])) {
                     plugins: [
                         SwaggerUIBundle.plugins.DownloadUrl
                     ],
-                    layout: "StandaloneLayout",
                     tryItOutEnabled: true,
+                    displayRequestDuration: true,
+                    docExpansion: "list",
+                    filter: false,
+                    showExtensions: true,
+                    showCommonExtensions: true,
                     requestInterceptor: function(request) {
                         // Handle CORS for localhost APIs
                         if (request.url.includes('localhost') || request.url.includes('127.0.0.1')) {

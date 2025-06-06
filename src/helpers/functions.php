@@ -1,5 +1,6 @@
 <?php
 
+// Validate the OpenAPI file.
 function validateOpenAPIFile($filePath, $originalName)
 {
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
@@ -16,7 +17,7 @@ function validateOpenAPIFile($filePath, $originalName)
             return ['valid' => false, 'error' => 'Invalid JSON format.'];
         }
     } else {
-        // Basic YAML validation (you might want to use a proper YAML parser)
+        // Basic YAML validation (you might want to use a proper YAML parser).
         if (strpos($content, 'openapi:') === false && strpos($content, 'swagger:') === false) {
             return ['valid' => false, 'error' => 'File does not appear to be a valid OpenAPI specification.'];
         }
@@ -25,13 +26,14 @@ function validateOpenAPIFile($filePath, $originalName)
     return ['valid' => true];
 }
 
+// Convert YAML to JSON.
 function convertYamlToJson($yamlPath)
 {
-    // Simple YAML to JSON conversion for basic cases
-    // In production, you'd want to use a proper YAML parser like symfony/yaml
+    // Simple YAML to JSON conversion for basic cases.
+    // In production, you'd want to use a proper YAML parser like symfony/yaml.
     $content = file_get_contents($yamlPath);
 
-    // This is a very basic conversion - consider using a proper YAML library
-    // For now, we'll serve YAML files directly to the viewers as they support both formats
+    // This is a very basic conversion - consider using a proper YAML library.
+    // For now, we'll serve YAML files directly to the viewers as they support both formats.
     return $content;
 }
