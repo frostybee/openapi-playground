@@ -148,7 +148,7 @@ input[type="text"]:focus {
 }
 
 .btn-swagger {
-    background: #85ea2d;
+    background: #3f7a0c;
     color: white;
 }
 
@@ -205,4 +205,37 @@ input[type="text"]:focus {
 .help-text li {
     margin-bottom: 5px;
     color: #555;
+}
+
+/* Example schemas styling */
+.examples-description {
+    color: #666;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+.example-item {
+    border-left: 4px solid #85ea2d;
+    background: linear-gradient(90deg, #f0f9ff 0%, #ffffff 100%);
+}
+
+.example-item:hover {
+    background: linear-gradient(90deg, #e0f2fe 0%, #f8f9fa 100%);
+}
+
+.example-badge {
+    background: #44800f;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.description {
+    color: #555;
+    font-size: 0.9em;
+    margin-top: 8px;
+    line-height: 1.4;
+    max-width: 500px;
 }

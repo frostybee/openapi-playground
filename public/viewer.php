@@ -3,6 +3,7 @@
 require_once '../src/config/app.php';
 require_once '../src/classes/SessionManager.php';
 require_once '../src/classes/FileManager.php';
+require_once '../src/classes/ExampleManager.php';
 
 // Start the session and initialize the uploaded files storage.
 SessionManager::start();
@@ -11,8 +12,24 @@ SessionManager::start();
 $fileId = $_GET['id'] ?? '';
 $renderer = $_GET['renderer'] ?? 'swagger';
 
-// Get the file data.
-$file = SessionManager::getUploadedFile($fileId);
+// Check if this is an example file or uploaded file
+$isExample = str_starts_with($fileId, 'example_');
+$file = null;
+$filePath = '';
+
+if ($isExample) {
+    // Get example file data
+    $file = ExampleManager::getExample($fileId);
+    if ($file) {
+        $filePath = ExampleManager::getExampleFilePath($file['file_name']);
+    }
+} else {
+    // Get uploaded file data
+    $file = SessionManager::getUploadedFile($fileId);
+    if ($file) {
+        $filePath = FileManager::getFilePath($file['file_name']);
+    }
+}
 
 // If the file is not found, redirect to the index page.
 if (!$fileId || !$file) {
@@ -20,10 +37,12 @@ if (!$fileId || !$file) {
     exit;
 }
 
-// Get the file path and check if it exists.
-$filePath = FileManager::getFilePath($file['file_name']);
+// Check if file exists
+$fileExists = $isExample ?
+    ExampleManager::exampleExists($file['file_name']) :
+    FileManager::fileExists($file['file_name']);
 
-if (!FileManager::fileExists($file['file_name'])) {
+if (!$fileExists) {
     header('Location: index.php');
     exit;
 }
@@ -54,14 +73,14 @@ if (!in_array($renderer, $validRenderers)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($file['custom_name']); ?> - <?php echo ucfirst($renderer); ?></title>
+    <title><?php echo htmlspecialchars($file['display_name'] ?? $file['custom_name']); ?> - <?php echo ucfirst($renderer); ?></title>
     <link rel="stylesheet" href="./assets/css/viewer.css">
     <link rel="stylesheet" href="./assets/css/rapidoc-viewer.css">
 </head>
 
 <body>
     <div class="header">
-        <h1>Schema:&nbsp; <?php echo htmlspecialchars($file['custom_name']); ?></h1>
+        <h1>Schema:&nbsp; <?php echo htmlspecialchars($file['display_name'] ?? $file['custom_name']); ?></h1>
         <div class="header-actions">
             <a href="viewer.php?id=<?php echo $fileId; ?>&renderer=swagger"
                 class="btn <?php echo $renderer === 'swagger' ? 'btn-active' : 'btn-light'; ?>">
