@@ -4,6 +4,8 @@ require_once '../src/helpers/functions.php';
 require_once '../src/classes/SessionManager.php';
 require_once '../src/classes/FileManager.php';
 require_once '../src/classes/ExampleManager.php';
+require_once '../src/classes/CSRFProtection.php';
+require_once '../src/classes/RateLimiter.php';
 
 // Start session and initialize uploaded files storage
 SessionManager::start();
@@ -31,6 +33,24 @@ FileManager::ensureUploadDirectoryExists();
         <?php
         // Handle file upload.
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['openapi_file'])) {
+            // Check rate limiting
+            if (RateLimiter::isLimited('upload')) {
+                $remaining = RateLimiter::getTimeUntilReset('upload');
+                $_SESSION['upload_error'] = 'Upload limit exceeded. Please wait ' . ceil($remaining / 60) . ' minutes before trying again.';
+                header('Location: index.php?upload=error');
+                exit;
+            }
+
+            // Validate CSRF token
+            if (!CSRFProtection::validateRequest()) {
+                $_SESSION['upload_error'] = 'Invalid security token. Please try again.';
+                header('Location: index.php?upload=error');
+                exit;
+            }
+
+            // Record the upload attempt
+            RateLimiter::recordAttempt('upload');
+
             $uploadedFile = $_FILES['openapi_file'];
             $customName = trim($_POST['custom_name'] ?? '');
 
@@ -38,6 +58,8 @@ FileManager::ensureUploadDirectoryExists();
 
             if ($result['success']) {
                 SessionManager::addUploadedFile($result['file_id'], $result['file_data']);
+                // Regenerate session ID after successful upload
+                session_regenerate_id(true);
                 // Redirect to prevent duplicate uploads on page refresh.
                 header('Location: index.php?upload=success');
                 exit;
@@ -60,17 +82,33 @@ FileManager::ensureUploadDirectoryExists();
         }
 
         // Handle file deletion.
-        if (isset($_GET['delete'])) {
-            $fileId = $_GET['delete'];
-            $fileData = SessionManager::getUploadedFile($fileId);
+        if (isset($_GET['delete']) && isset($_GET['csrf_token'])) {
+            // Check rate limiting for deletes
+            if (RateLimiter::isLimited('delete')) {
+                $remaining = RateLimiter::getTimeUntilReset('delete');
+                echo '<div class="alert alert-error">✗ Delete limit exceeded. Please wait ' . ceil($remaining / 60) . ' minutes.</div>';
+            } else {
+                // Validate CSRF token for delete operations
+                if (!CSRFProtection::verifyToken($_GET['csrf_token'])) {
+                    echo '<div class="alert alert-error">✗ Invalid security token.</div>';
+                } else {
+                    // Record the delete attempt
+                    RateLimiter::recordAttempt('delete');
 
-            if ($fileData) {
-                // Delete the file from filesystem.
-                FileManager::deleteFile($fileData['file_name']);
+                    $fileId = $_GET['delete'];
+                    $fileData = SessionManager::getUploadedFile($fileId);
 
-                // Remove from session.
-                SessionManager::removeUploadedFile($fileId);
-                echo '<div class="alert alert-success">✓ File deleted successfully!</div>';
+                    if ($fileData) {
+                        // Delete the file from filesystem.
+                        FileManager::deleteFile($fileData['file_name']);
+
+                        // Remove from session.
+                        SessionManager::removeUploadedFile($fileId);
+                        // Regenerate session ID after deletion
+                        session_regenerate_id(true);
+                        echo '<div class="alert alert-success">✓ File deleted successfully!</div>';
+                    }
+                }
             }
         }
 
@@ -87,6 +125,7 @@ FileManager::ensureUploadDirectoryExists();
 
         <div class="upload-section">
             <form method="POST" enctype="multipart/form-data">
+                <?php echo CSRFProtection::getTokenField(); ?>
                 <div class="form-group">
                     <label for="openapi_file">Choose OpenAPI File (.json, .yaml, .yml)</label>
                     <input type="file" id="openapi_file" name="openapi_file" accept=".json,.yaml,.yml" required>
@@ -94,7 +133,7 @@ FileManager::ensureUploadDirectoryExists();
 
                 <div class="form-group">
                     <label for="custom_name">Custom Name</label>
-                    <input type="text" id="custom_name" name="custom_name" placeholder="e.g., My API v1.0" required>
+                    <input type="text" id="custom_name" name="custom_name" placeholder="e.g., My API v1.0" required maxlength="255">
                 </div>
 
                 <button type="submit" class="btn">Upload & View</button>
@@ -146,7 +185,7 @@ FileManager::ensureUploadDirectoryExists();
                         <div class="file-actions">
                             <a href="viewer.php?id=<?php echo $file['id']; ?>&renderer=swagger" class="btn-small btn-swagger">Swagger UI</a>
                             <a href="viewer.php?id=<?php echo $file['id']; ?>&renderer=rapidoc" class="btn-small btn-rapidoc">RapiDoc</a>
-                            <a href="?delete=<?php echo $file['id']; ?>" class="btn-small btn-delete" onclick="return confirm('Are you sure you want to delete this file?')">Delete</a>
+                            <a href="?delete=<?php echo $file['id']; ?>&csrf_token=<?php echo urlencode(CSRFProtection::getToken()); ?>" class="btn-small btn-delete" onclick="return confirm('Are you sure you want to delete this file?')">Delete</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -162,6 +201,14 @@ FileManager::ensureUploadDirectoryExists();
                 <li><strong>Compare:</strong> View the same API spec with both renderers to see the differences</li>
             </ul>
         </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2025 - present OpenAPI Schema Viewer  <a href="https://github.com/frostybee/openapi-playground" target="_blank" rel="noopener noreferrer">
+                        View on GitHub
+                    </a></p>
+            </div>
+        </footer>
     </div>
 </body>
 
