@@ -1,16 +1,6 @@
-# .htaccess - Root directory
 RewriteEngine On
 
-# Redirect all requests to public directory
-RewriteCond %{REQUEST_URI} !^/public/
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-#RewriteRule ^(.*)$ public/$1 [L]
-
-# RewriteRule ^$ public/ [L]
-# RewriteRule (.*) public/$1 [L]
-
-# If accessing root, redirect to public/index.php
+# Redirect to public directory
 RewriteRule ^$ public/ [L]
 RewriteRule (.*) public/$1 [L]
 
@@ -19,12 +9,6 @@ RewriteRule ^src/ - [F,L]
 RewriteRule ^storage/ - [F,L]
 RewriteRule ^templates/ - [F,L]
 RewriteRule ^includes/ - [F,L]
-
-# Protect uploads directory from direct access
-<Files "uploads/*">
-    Order Deny,Allow
-    Deny from all
-</Files>
 
 # Security headers
 Header always set X-Content-Type-Options nosniff

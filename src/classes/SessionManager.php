@@ -10,28 +10,69 @@ class SessionManager
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
-            // Configure session to last 4 days (4 * 24 * 60 * 60 = 345600 seconds).
-            $sessionLifetime = 4 * 24 * 60 * 60; // 4 days in seconds
+            // Configure session to last 1 day (for local student use).
+            $sessionLifetime = 24 * 60 * 60; // 1 day in seconds
 
-            // Set session cookie lifetime to 4 days.
+            // Set session cookie lifetime to 1 day.
             session_set_cookie_params([
                 'lifetime' => $sessionLifetime,
                 'path' => '/',
                 'domain' => '',
                 'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
                 'httponly' => true,
-                'samesite' => 'Lax'
+                'samesite' => 'Strict' // More secure.
             ]);
 
-            // Set session garbage collection max lifetime to 4 days.
+            // Set session garbage collection max lifetime to 1 day.
             ini_set('session.gc_maxlifetime', $sessionLifetime);
 
             // Increase garbage collection probability for better cleanup.
             ini_set('session.gc_probability', 1);
             ini_set('session.gc_divisor', 100);
 
+            // Use strong session ID generation.
+            ini_set('session.entropy_length', 32);
+            ini_set('session.use_strict_mode', 1);
+            ini_set('session.cookie_httponly', 1);
+
             session_start();
+
+            // Regenerate session ID periodically for security
+            if (!isset($_SESSION['last_regeneration'])) {
+                $_SESSION['last_regeneration'] = time();
+                session_regenerate_id(true);
+            } elseif (time() - $_SESSION['last_regeneration'] > 900) { // 15 minutes
+                $_SESSION['last_regeneration'] = time();
+                session_regenerate_id(true);
+            }
+
+            // Add session fingerprinting for security
+            $fingerprint = self::generateFingerprint();
+            if (!isset($_SESSION['fingerprint'])) {
+                $_SESSION['fingerprint'] = $fingerprint;
+            } elseif ($_SESSION['fingerprint'] !== $fingerprint) {
+                // Session hijacking detected - destroy session
+                session_destroy();
+                session_start();
+                $_SESSION['fingerprint'] = $fingerprint;
+                $_SESSION['last_regeneration'] = time();
+            }
         }
+    }
+
+    /**
+     * Generate a browser fingerprint for session security.
+     */
+    private static function generateFingerprint(): string
+    {
+        $factors = [
+            $_SERVER['HTTP_USER_AGENT'] ?? '',
+            $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '',
+            $_SERVER['HTTP_ACCEPT_ENCODING'] ?? '',
+            $_SERVER['REMOTE_ADDR'] ?? ''
+        ];
+
+        return hash('sha256', implode('|', $factors));
     }
 
     /**
