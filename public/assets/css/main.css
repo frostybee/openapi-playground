@@ -6,7 +6,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #2c3e50 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, #2c3e50  100%);
     min-height: 100vh;
     padding: 20px;
 }
@@ -86,7 +86,7 @@ input[type="text"]:focus {
 }
 
 .btn {
-    background: linear-gradient(135deg, #2c3e50 0%, #764ba2 100%);
+    background: #4b09eb;
     color: white;
     border: none;
     padding: 12px 30px;
