@@ -3,7 +3,7 @@
 class CSRFProtection
 {
     private const TOKEN_KEY = 'csrf_token';
-    private const TOKEN_LIFETIME = 3600; // 1 hour
+    private const TOKEN_LIFETIME = 86400; // 24 hours
 
     /**
      * Generate a new CSRF token and store it in the session.
@@ -28,7 +28,12 @@ class CSRFProtection
         }
 
         $tokenData = $_SESSION[self::TOKEN_KEY];
-        
+
+        // Handle legacy string tokens or invalid data.
+        if (!is_array($tokenData) || !isset($tokenData['timestamp']) || !isset($tokenData['token'])) {
+            return self::generateToken();
+        }
+
         // Check if token has expired
         if ((time() - $tokenData['timestamp']) > self::TOKEN_LIFETIME) {
             return self::generateToken();
@@ -47,7 +52,12 @@ class CSRFProtection
         }
 
         $tokenData = $_SESSION[self::TOKEN_KEY];
-        
+
+        // Handle legacy string tokens or invalid data
+        if (!is_array($tokenData) || !isset($tokenData['timestamp']) || !isset($tokenData['token'])) {
+            return false;
+        }
+
         // Check if token has expired
         if ((time() - $tokenData['timestamp']) > self::TOKEN_LIFETIME) {
             return false;

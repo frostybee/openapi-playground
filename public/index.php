@@ -204,9 +204,11 @@ FileManager::ensureUploadDirectoryExists();
 
         <footer class="footer">
             <div class="footer-content">
-                <p>&copy; 2025 - present OpenAPI Schema Viewer  <a href="https://github.com/frostybee/openapi-playground" target="_blank" rel="noopener noreferrer">
+                <p>OpenAPI Schema Viewer.</p>
+                <p>&copy; 2025 - present FrostyBee <a href="https://github.com/frostybee/openapi-playground" target="_blank" rel="noopener noreferrer">
                         View on GitHub
-                    </a></p>
+                    </a>
+                </p>
             </div>
         </footer>
     </div>
