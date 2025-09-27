@@ -3,10 +3,11 @@
 // This template is included by viewer.php when renderer is 'swagger'
 ?>
 
-<link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.24.0/swagger-ui.css" />
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.29.0/swagger-ui.css" />
 
 <div id="swagger-ui"></div>
-<script src="https://unpkg.com/swagger-ui-dist@5.24.0/swagger-ui-bundle.js"></script>
+<script src="https://unpkg.com/swagger-ui-dist@5.29.0/swagger-ui-bundle.js"></script>
+
 <script>
     SwaggerUIBundle({
         url: 'viewer.php?id=<?php echo $fileId; ?>&spec=1',
