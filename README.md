@@ -17,11 +17,32 @@ A self-hosted OpenAPI documentation viewer with Swagger UI and RapiDoc support. 
 - Modern web browser.
 - No additional database or server-side dependencies required.
 
-## Usage Instructions
+## Installation
 
-- Clone or download this repository.
-- Deploy the `openapi-playground` to a webserver (e.g., Apache)
-- Open the home page at `localhost/openapi-playground`
+### Option 1: Using Composer (Recommended)
+
+Requires [Composer](https://getcomposer.org) to be installed.
+
+1. Navigate to your web server's document root folder.
+2. Run the following command:
+
+   ```bash
+   composer create-project frostybee/openapi-playground [project-name]
+   ```
+
+3. Point your web server's document root at the `public/` directory of the created folder.
+4. Open the home page at `http://localhost/[project-name]`.
+
+### Option 2: Manual Installation
+
+1. Clone the repository or [download the ZIP](https://github.com/frostybee/openapi-playground/archive/refs/heads/main.zip) and extract it:
+
+   ```bash
+   git clone https://github.com/frostybee/openapi-playground.git [project-name]
+   ```
+
+2. Point your web server's document root at the `public/` directory of the cloned folder.
+3. Open the home page at `http://localhost/[project-name]`.
 
 ## Resources
 

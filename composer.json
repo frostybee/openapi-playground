@@ -1,0 +1,33 @@
+{
+    "name": "frostybee/openapi-playground",
+    "description": "A self-hosted OpenAPI documentation viewer with Swagger UI and RapiDoc support.",
+    "type": "project",
+    "license": "MIT",
+    "keywords": [
+        "openapi",
+        "swagger",
+        "rapidoc",
+        "api",
+        "documentation",
+        "playground"
+    ],
+    "homepage": "https://github.com/frostybee/openapi-playground",
+    "authors": [
+        {
+            "name": "Frostybee",
+            "homepage": "https://github.com/frostybee",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.2"
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "@php -r \"echo 'Project ready. Point your web server document root at the public/ directory.\\n';\""
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
